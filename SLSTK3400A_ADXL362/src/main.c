@@ -1,17 +1,21 @@
-/**************************************************************************//**
- * @main_series0_HG.c
- * @brief Demonstrates USART1 as SPI master.
- * @version 0.0.1
- ******************************************************************************
- * @section License
- * <b>Copyright 2018 Silicon Labs, Inc. http://www.silabs.com</b>
- *******************************************************************************
+/***************************************************************************//**
+ * @file main.c
+ * @brief The main file for the program to interface to the accelerometer.
+ * @details Started with code from the UART example (main_series0_HG.c) from SiLabs Github.
+ * @version 1.2
+ * @author Brecht Van Eeckhoudt
  *
- * This file is licensed under the Silabs License Agreement. See the file
- * "Silabs_License_Agreement.txt" for details. Before using this software for
- * any purpose, you must agree to the terms of that agreement.
+ * ******************************************************************************
+ *
+ * @section Pinout ADXL362
+ *
+ *   PE10: MOSI
+ *   PE11: MISO
+ *   PE12: CLK
+ *   PD4: NCS
  *
  ******************************************************************************/
+
 
 #include <stdint.h>  /* (u)intXX_t */
 #include <stdbool.h> /* "bool", "true", "false" */
@@ -23,48 +27,48 @@
 
 #include "../inc/accel.h"
 
-/* Comment the two lines below to remove all USART1 debugging stuff (TX = PC0 @ 115200) */
+
+/* Comment the two lines below to remove all USART1 debugging stuff (TX = PC0 ~ VCOM @ 115200) */
 #include "dbprint.h"
 #define DEBUGGING /* Comment to remove all USART1 stuff */
 
-/*  PE10: MOSI
- *  PE11: MISO
- *  PE12: CLK
- *  PD4: NCS
- */
-
-
 
 /* Global variables */
-static volatile uint32_t msTicks; /* Static volatile because it's a global variable that's modified by an interrupt service routine (https://barrgroup.com/Embedded-Systems/How-To/C-Volatile-Keyword) */
+static volatile uint32_t msTicks; /* Volatile because it's a global variable that's modified by an interrupt service routine */
+
 
 /* Prototypes */
-static void Delay(uint32_t dlyTicks);
+static void Delay (uint32_t dlyTicks); /* Static so the function is only "seen" in the file it's declared in. */
 
 
 /**************************************************************************//**
- * @brief SysTick_Handler
- * Interrupt Service Routine for system tick counter
+ * @brief
+ *   Interrupt Service Routine for system tick counter.
  *****************************************************************************/
-void SysTick_Handler(void)
+void SysTick_Handler (void)
 {
-	msTicks++;       /* increment counter necessary in Delay()*/
+	msTicks++; /* Increment counter necessary in Delay() */
 }
 
-/**************************************************************************//**
- * @brief Delays number of msTick Systicks (typically 1 ms)
- * @param dlyTicks Number of ticks to delay
- *****************************************************************************/
-void Delay(uint32_t dlyTicks)
-{
-	uint32_t curTicks;
 
-	curTicks = msTicks;
-	while ((msTicks - curTicks) < dlyTicks) ;
+/**************************************************************************//**
+ * @brief
+ *   Waits a certain amount of milliseconds using the systicks.
+ *
+ * @param[in] dlyTicks
+ *   Number of milliseconds (ticks) to wait.
+ *****************************************************************************/
+void Delay (uint32_t dlyTicks)
+{
+	uint32_t curTicks = msTicks;
+
+	while ((msTicks - curTicks) < dlyTicks);
 }
 
+
 /**************************************************************************//**
- * @brief Initialize the LED's
+ * @brief
+ *   Initialize the onboard LED's.
  *****************************************************************************/
 void initLEDS (void)
 {
@@ -74,14 +78,25 @@ void initLEDS (void)
 	GPIO_PinOutClear(gpioPortF, 5); /* Disable LED1 */
 }
 
+
 /**************************************************************************//**
- * @brief Error method
- * Flashes the LEDS, displays a UART message & holds the MCU forever in a loop until a reset.
+ * @brief
+ *   Error method.
+ *
+ * @details
+ *   Flashes the LED's, displays a UART message and holds
+ *   the microcontroller forever in a loop until it gets reset.
+ *
+ * @param[in] number
+ *   The number to indicate where in the code the error was thrown.
  *****************************************************************************/
-void Error (void)
+void Error (uint8_t number)
 {
+
 #ifdef DEBUGGING /* DEBUGGING */
-	dbprintln(">>>>> Error! Please reset MCU <<<<<");
+	dbprint(">>> Error (");
+	dbprintInt(number);
+	dbprintln(")! Please reset MCU. <<<");
 #endif /* DEBUGGING */
 
 	GPIO_PinOutClear(gpioPortF, 4); /* Disable LED0 */
@@ -95,13 +110,27 @@ void Error (void)
 	}
 }
 
+
 /**************************************************************************//**
- * @brief Go through all of the register settings to see the influence it has on power usage
+ * @brief
+ *   Go through all of the register settings to see the influence
+ *   they have on power usage.
  *****************************************************************************/
 void testADXL (void)
 {
+
 #ifdef DEBUGGING /* DEBUGGING */
-	dbprintln("INFO: Testing the ADXL (all in +-2g default measurement range, 7 seconds):");
+		dbprintln("Waiting 5 seconds...");
+#endif /* DEBUGGING */
+
+		Delay(5000);
+
+#ifdef DEBUGGING /* DEBUGGING */
+		dbprintln("Starting...");
+#endif /* DEBUGGING */
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbinfo("Testing the ADXL (all in +-2g default measurement range, 7 seconds):");
 	dbprintln("   standby - 1sec - ODR 12,5Hz + enable measurements - 1sec - ODR 25 Hz");
 	dbprintln("   - 1sec - ODR 50 Hz - 1sec - ODR 100 Hz (default on reset) - 1sec -");
 	dbprintln("   200Hz - 1sec - ODR 400 Hz - 1sec - soft Reset");
@@ -145,13 +174,19 @@ void testADXL (void)
 	softResetADXL();
 
 #ifdef DEBUGGING /* DEBUGGING */
-	dbprintln("INFO: Testing done");
+	dbinfo("Testing done");
 #endif /* DEBUGGING */
 
 }
 
+
 /**************************************************************************//**
- * @brief Go through all of the register settings to see the influence it has on power usage
+ * @brief
+ *   Soft reset accelerometer handler.
+ *
+ * @details
+ *   If the first ID check fails, the MCU is put on hold for one second
+ *   and the ID gets checked again.
  *****************************************************************************/
 void resetHandlerADXL (void)
 {
@@ -161,14 +196,17 @@ void resetHandlerADXL (void)
 	/* Read DEVID_AD */
 	if (checkID_ADXL())
 	{
+
 #ifdef DEBUGGING /* DEBUGGING */
-		dbprintln("INFO: Soft reset ADXL -- correct ID!");
+		dbinfo("Soft reset ADXL -- correct ID!");
 #endif /* DEBUGGING */
+
 	}
 	else
 	{
+
 #ifdef DEBUGGING /* DEBUGGING */
-		dbprintln("WARN: Soft reset ADXL -- Incorrect ID!");
+		dbwarn("Soft reset ADXL -- Incorrect ID!");
 #endif /* DEBUGGING */
 
 		Delay(1000);
@@ -178,23 +216,28 @@ void resetHandlerADXL (void)
 
 		if (checkID_ADXL())
 		{
+
 #ifdef DEBUGGING /* DEBUGGING */
-			dbprintln("INFO: Retry soft reset -- correct ID!");
+			dbinfo("Retry soft reset -- correct ID!");
 #endif /* DEBUGGING */
+
 		}
 		else
 		{
+
 #ifdef DEBUGGING /* DEBUGGING */
-			dbprintln("CRIT: Retry soft reset -- Incorrect ID!");
+			dbcrit("Retry soft reset -- Incorrect ID!");
 #endif /* DEBUGGING */
-			Error();
+
+			Error(0);
 		}
 	}
 }
 
 
 /**************************************************************************//**
- * @brief Main function
+ * @brief
+ *   Main function.
  *****************************************************************************/
 int main(void)
 {
@@ -203,7 +246,7 @@ int main(void)
 	/* Initialize chip */
 	CHIP_Init();
 
-	/* Initalize systick */
+	/* Initialize systick */
 	if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1) ;
 
 	/* Initialize USART0 as SPI slave (also initialize CS pin) */
@@ -221,44 +264,33 @@ int main(void)
 	/* Soft reset ADXL handler */
 	resetHandlerADXL();
 
-	/*
-	 * Profile the ADXL
-	 *
-	 * Energy profiler werkt ook met VCOM?
-	 * 		Als VCOM open staat werkt het even, de energy profiler neemt veel tijd om op te starten,
-	 * 		erna nooit meer debug messages tot USB wordt uitgetrokken & opnieuw ingestoken...
-	 */
-
-	/*
-	dbPrintln("Waiting 5 seconds...");
-	Delay(5000);
-	dbPrintln("Starting...");
-	testADXL();
-	*/
+	/* Profile the ADXL (make sure to not use VCOM here!) */
+	//testADXL();
 
 	/* Set the measurement range (0 = +- 2g, 1 = +- 4g, 2 = +- 8g) */
-	uint8_t range = 1;
-	setRangeADXL(range);
+	uint8_t setRange = 1;
+
+	configADXL_range(setRange);
 
 #ifdef DEBUGGING /* DEBUGGING */
-	if (range == 0)
+	if (setRange == 0)
 	{
-		dbprintln("INFO: Measurement mode +- 2g selected");
+		dbinfo("Measurement mode +- 2g selected");
 	}
-	else if (range == 1)
+	else if (setRange == 1)
 	{
-		dbprintln("INFO: Measurement mode +- 4g selected");
+		dbinfo("Measurement mode +- 4g selected");
 	}
-	else if (range == 2)
+	else if (setRange == 2)
 	{
-		dbprintln("INFO: Measurement mode +- 8g selected");
+		dbinfo("Measurement mode +- 8g selected");
 	}
 #endif /* DEBUGGING */
 
 
 	/* Enable measurements */
-	writeADXL(ADXL_REG_POWER_CTL, 0b00000010); /* last 2 bits are measurement mode */
-	dbprintln("INFO: Measurement enabled");
+	writeADXL(ADXL_REG_POWER_CTL, 0b00000010); /* Last 2 bits are measurement mode */
+	dbinfo("Measurement enabled");
 
 	while(1)
 	{
@@ -271,13 +303,13 @@ int main(void)
 
 		/* Print XYZ sensor data */
 		dbprint("\r[");
-		dbprintUint(counter);
+		dbprintInt(counter);
 		dbprint("] X: ");
-		dbprintInt(10, convertGRangeToGValue(XYZDATA[0], range));
+		dbprintInt(convertGRangeToGValue(XYZDATA[0]));
 		dbprint(" mg | Y: ");
-		dbprintInt(10, convertGRangeToGValue(XYZDATA[1], range));
+		dbprintInt(convertGRangeToGValue(XYZDATA[1]));
 		dbprint(" mg | Z: ");
-		dbprintInt(10, convertGRangeToGValue(XYZDATA[2], range));
+		dbprintInt(convertGRangeToGValue(XYZDATA[2]));
 		dbprint(" mg   "); /* Overwrite other data if it's remaining (see \r) */
 		/* dbprintln(""); */
 
