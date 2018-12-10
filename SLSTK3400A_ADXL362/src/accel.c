@@ -5,14 +5,6 @@
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
-
-#include <stdint.h>  /* (u)intXX_t */
-#include <stdbool.h> /* "bool", "true", "false" */
-
-#include "em_cmu.h"
-#include "em_gpio.h"
-#include "em_usart.h"
-
 #include "../inc/accel.h"
 
 
@@ -145,7 +137,7 @@ void readADXL_XYZDATA (void)
 	/* CS low (active low!) */
 	GPIO_PinOutClear(ADXL_NCS_PORT, ADXL_NCS_PIN);
 
-	/* burst read (address auto-increments) */
+	/* Burst read (address auto-increments) */
 	USART_SpiTransfer(USART0, 0x0B);				/* "read" instruction */
 	USART_SpiTransfer(USART0, ADXL_REG_XDATA); 		/* Address */
 	XYZDATA[0] = USART_SpiTransfer(USART0, 0x00);	/* Read response */
@@ -190,24 +182,38 @@ void configADXL_range (uint8_t givenRange)
  *   Configure the accelerometer to work in activity threshold mode.
  *
  * @details
- *   Route ACT to INT1 pin using INTMAP1, isolate bits and write
- *   settings to both threshold registers.
+ *   Route activity detector to INT1 pin using INTMAP1, isolate bits
+ *   and write settings to both threshold registers.
  *
- * @param[in] threshold
- *   This needs to be an unsigned 11bit number.
- *   TODO: Change to using "g" value using formula.
+ * @param[in] gThreshold
+ *   Threshold [g].
  *****************************************************************************/
-void configADXL_activity (uint16_t threshold)
+void configADXL_activity (uint16_t gThreshold)
 {
-	/* Map INT1 pin to activity detector */
-	writeADXL(ADXL_REG_INTMAP1, 0b00010000);
+	/* Map activity detector to INT1 pin  */
+	writeADXL(ADXL_REG_INTMAP1, 0b00010000); /* Bit 4 selects activity detector */
+
+	/* Enable referenced activity threshold mode (last two bits) */
+	writeADXL(ADXL_REG_ACT_INACT_CTL, 0b00000011);
+
+	/* Convert g value to "codes":
+	 * THRESH_ACT [codes] = Threshold Value [g] × Scale Factor [LSB per g] */
+	uint16_t threshold;
+
+	/* TODO: Fix this */
+
+	if (range == 0) threshold = gThreshold * 1000;
+	else if (range == 1) threshold = gThreshold * 500;
+	else if (range == 2) threshold = 250;
+	else threshold = 0;
+
 
 	/* Isolate bits using masks and shifting */
 	uint8_t low  = (threshold & 0b0011111111);
 	uint8_t high = (threshold & 0b1100000000) >> 8;
 
 	/* Set threshold register values (total: 11bit unsigned) */
-	writeADXL(ADXL_REG_THRESH_ACT_L, low); /* 7:0 bits used */
+	writeADXL(ADXL_REG_THRESH_ACT_L, low);  /* 7:0 bits used */
 	writeADXL(ADXL_REG_THRESH_ACT_H, high); /* 2:0 bits used */
 }
 
@@ -237,7 +243,7 @@ bool checkID_ADXL (void)
 
 /**************************************************************************//**
  * @brief
- *   Convert sensor value in +-g range to g value.
+ *   Convert sensor value in +-g range to mg value.
  *
  * @note
  *   Info found at http://ozzmaker.com/accelerometer-to-g/
@@ -246,21 +252,12 @@ bool checkID_ADXL (void)
  *   Value in g-range returned by sensor.
  *
  * @return
- *   The calculated g value.
+ *   The calculated mg value.
  *****************************************************************************/
 int32_t convertGRangeToGValue (int8_t sensorValue)
 {
-	if (range == 0)
-	{
-		return ((2*2*1000 / 255) * sensorValue);
-	}
-	else if (range == 1)
-	{
-		return ((2*4*1000 / 255) * sensorValue);
-	}
-	else if (range == 2)
-	{
-		return ((2*8*1000 / 255) * sensorValue);
-	}
-	return (0);
+	if (range == 0) return ((2*2*1000 / 255) * sensorValue);
+	else if (range == 1) return ((2*4*1000 / 255) * sensorValue);
+	else if (range == 2) return ((2*8*1000 / 255) * sensorValue);
+	else return (0);
 }

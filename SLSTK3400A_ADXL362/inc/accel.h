@@ -13,6 +13,9 @@
 
 #include <stdint.h>  	/* (u)intXX_t */
 #include <stdbool.h> 	/* "bool", "true", "false" */
+#include "em_cmu.h"
+#include "em_gpio.h"
+#include "em_usart.h"
 
 
 /* ADXL GPOI */
@@ -24,6 +27,8 @@
 #define ADXL_MISO_PIN 11
 #define ADXL_NCS_PORT gpioPortD 	/* Can't use the US0_CS port (PE13) to manually set/clear CS line */
 #define ADXL_NCS_PIN 4
+#define ADXL_INT1_PORT gpioPortD
+#define ADXL_INT1_PIN 7
 
 
 /* ADXL REGISTERS */
@@ -40,6 +45,7 @@
 #define ADXL_REG_SOFT_RESET 	0x1F /* Needs to be 0x52 ("R") written to for a soft reset */
 #define ADXL_REG_THRESH_ACT_L	0x20 /* 7:0 bits used */
 #define ADXL_REG_THRESH_ACT_H	0x21 /* 2:0 bits used */
+#define ADXL_REG_ACT_INACT_CTL  0x27 /* Activity/Inactivity control register: XX - XX - LINKLOOP - LINKLOOP - INACT_REF - INACT_EN - ACT_REF - ACT_EN */
 #define ADXL_REG_INTMAP1 		0x2A /* INT_LOW -- AWAKE -- INACT -- ACT -- FIFO_OVERRUN -- FIFO_WATERMARK -- FIFO_READY -- DATA_READY */
 #define ADXL_REG_INTMAP2 		0x2B /* INT_LOW -- AWAKE -- INACT -- ACT -- FIFO_OVERRUN -- FIFO_WATERMARK -- FIFO_READY -- DATA_READY */
 #define ADXL_REG_FILTER_CTL 	0x2C /* Write FFxx xxxx (FF = 00 for +-2g, 01 for =-4g, 1x for +- 8g) for measurement range selection */
@@ -60,7 +66,7 @@ void writeADXL (uint8_t address, uint8_t data);
 void readADXL_XYZDATA (void);
 
 void configADXL_range (uint8_t givenRange);
-void configADXL_activity (uint16_t threshold);
+void configADXL_activity (uint16_t gThreshold);
 
 void softResetADXL (void);
 bool checkID_ADXL (void);
