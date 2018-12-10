@@ -17,6 +17,11 @@
 #include "em_gpio.h"
 #include "em_usart.h"
 
+#include "../inc/util.h"     /* Utility functions */
+#include "../inc/handlers.h" /* Interrupt handlers */
+
+#include "../inc/debugging.h" /* Enable or disable printing to UART */
+
 
 /* ADXL GPOI */
 #define ADXL_CLK_PORT gpioPortE
@@ -60,13 +65,16 @@ uint8_t range;
 /* Prototypes */
 void initADXL_SPI (void);
 
+void readValuesADXL (void);
+void resetHandlerADXL (void);
+
 uint8_t readADXL (uint8_t address);
 void writeADXL (uint8_t address, uint8_t data);
 
 void readADXL_XYZDATA (void);
 
 void configADXL_range (uint8_t givenRange);
-void configADXL_activity (uint16_t gThreshold);
+void configADXL_activity (uint8_t gThreshold);
 
 void softResetADXL (void);
 bool checkID_ADXL (void);

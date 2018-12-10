@@ -9,13 +9,6 @@
 
 
 /* Global variables */
-
-/*
- * The “volatile” type indicates to the compiler that the data is not normal memory,
- * and could actually change at unexpected times. Hardware registers are often volatile,
- * and so are variables which get changed in interrupts.
- */
-
 volatile int8_t XYZDATA[3] = { 0x00, 0x00, 0x00 };
 uint8_t range = 0;
 
@@ -67,6 +60,196 @@ void initADXL_SPI (void)
 
 	/* Set CS high (active low!) */
 	GPIO_PinOutSet(gpioPortE, 13);
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Go through all of the register settings to see the influence
+ *   they have on power usage.
+ *****************************************************************************/
+void testADXL (void)
+{
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbprintln("Waiting 5 seconds...");
+#endif /* DEBUGGING */
+
+	Delay(5000);
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbprintln("Starting...");
+#endif /* DEBUGGING */
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbinfo("Testing the ADXL (all in +-2g default measurement range, 7 seconds):");
+	dbprintln("   standby - 1sec - ODR 12,5Hz + enable measurements - 1sec - ODR 25 Hz");
+	dbprintln("   - 1sec - ODR 50 Hz - 1sec - ODR 100 Hz (default on reset) - 1sec -");
+	dbprintln("   200Hz - 1sec - ODR 400 Hz - 1sec - soft Reset");
+#endif /* DEBUGGING */
+
+	/* Soft reset ADXL */
+	softResetADXL();
+
+	/* Standby */
+	Delay(1000);
+
+	/* ODR 12,5Hz */
+	writeADXL(ADXL_REG_FILTER_CTL, 0b00010000); /* last 3 bits are ODR */
+
+	/* Enable measurements */
+	writeADXL(ADXL_REG_POWER_CTL, 0b00000010); /* last 2 bits are measurement mode */
+
+	Delay(1000);
+
+	/* ODR 25Hz */
+	writeADXL(ADXL_REG_FILTER_CTL, 0b00010001); /* last 3 bits are ODR */
+	Delay(1000);
+
+	/* ODR 50Hz */
+	writeADXL(ADXL_REG_FILTER_CTL, 0b00010010); /* last 3 bits are ODR */
+	Delay(1000);
+
+	/* ODR 100Hz (default) */
+	writeADXL(ADXL_REG_FILTER_CTL, 0b00010011); /* last 3 bits are ODR */
+	Delay(1000);
+
+	/* ODR 200Hz */
+	writeADXL(ADXL_REG_FILTER_CTL, 0b00010100); /* last 3 bits are ODR */
+	Delay(1000);
+
+	/* ODR 400Hz */
+	writeADXL(ADXL_REG_FILTER_CTL, 0b00010101); /* last 3 bits are ODR */
+	Delay(1000);
+
+	/* Soft reset ADXL */
+	softResetADXL();
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbinfo("Testing done");
+#endif /* DEBUGGING */
+
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Read and display g values forever with a one second interval.
+ *
+ * @details
+ *   The accelerometer is put in measurement mode at 12.5Hz ODR, new
+ *   values are displayed every 10ms, if an interrupt was generated
+ *   a delay of one second is called.
+ *****************************************************************************/
+void readValuesADXL (void)
+{
+	uint32_t counter = 0;
+
+	/* Get (range) settings */
+	uint8_t reg = readADXL(ADXL_REG_FILTER_CTL);
+	reg = reg | 0b00010000; /* ODR (last 3 bits) 12,5Hz */
+	writeADXL(ADXL_REG_FILTER_CTL, reg);
+
+	/* Enable measurements */
+	writeADXL(ADXL_REG_POWER_CTL, 0b00000010); /* Last 2 bits are measurement mode */
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbinfo("Measurement enabled");
+#endif /* DEBUGGING */
+
+	/* Infinite loop */
+	while (1)
+	{
+		GPIO_PinOutSet(gpioPortF, 4); /* Enable LED0 */
+
+		/* Read XYZ sensor data */
+		readADXL_XYZDATA();
+
+#ifdef DEBUGGING /* DEBUGGING */
+		/* Print XYZ sensor data */
+		//dbprint("[");
+		dbprint("\r[");
+		dbprintInt(counter);
+		dbprint("] X: ");
+		dbprintInt(convertGRangeToGValue(XYZDATA[0]));
+		dbprint(" mg | Y: ");
+		dbprintInt(convertGRangeToGValue(XYZDATA[1]));
+		dbprint(" mg | Z: ");
+		dbprintInt(convertGRangeToGValue(XYZDATA[2]));
+		dbprint(" mg   "); /* Extra spacing is to overwrite other data if it's remaining (see \r) */
+		//dbprintln("");
+#endif /* DEBUGGING */
+
+		GPIO_PinOutClear(gpioPortF, 4); /* Disable LED0 */
+
+		counter++;
+
+		Delay(10);
+
+		/* Read status register to acknowledge interrupt
+		 * (can be disabled by changing LINK/LOOP mode in ADXL_REG_ACT_INACT_CTL) */
+		if (triggered)
+		{
+			Delay(1000);
+			readADXL(ADXL_REG_STATUS);
+			triggered = false;
+		}
+	}
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Soft reset accelerometer handler.
+ *
+ * @details
+ *   If the first ID check fails, the MCU is put on hold for one second
+ *   and the ID gets checked again.
+ *****************************************************************************/
+void resetHandlerADXL (void)
+{
+	/* Soft reset ADXL */
+	softResetADXL();
+
+	/* Read DEVID_AD */
+	if (checkID_ADXL())
+	{
+
+#ifdef DEBUGGING /* DEBUGGING */
+		dbinfo("Soft reset ADXL - correct ID!");
+#endif /* DEBUGGING */
+
+	}
+	else
+	{
+
+#ifdef DEBUGGING /* DEBUGGING */
+		dbwarn("Soft reset ADXL - Incorrect ID!");
+#endif /* DEBUGGING */
+
+		Delay(1000);
+
+		/* Soft reset */
+		softResetADXL();
+
+		if (checkID_ADXL())
+		{
+
+#ifdef DEBUGGING /* DEBUGGING */
+			dbinfo("Retry soft reset - correct ID!");
+#endif /* DEBUGGING */
+
+		}
+		else
+		{
+
+#ifdef DEBUGGING /* DEBUGGING */
+			dbcrit("Retry soft reset - Incorrect ID!");
+#endif /* DEBUGGING */
+
+			Error(0);
+		}
+	}
 }
 
 
@@ -161,19 +344,31 @@ void readADXL_XYZDATA (void)
  *****************************************************************************/
 void configADXL_range (uint8_t givenRange)
 {
+	/* Get value in register */
+	uint8_t reg = readADXL(ADXL_REG_FILTER_CTL);
+
+	/* TODO: fix masking */
+
 	/* Set measurement range (first two bits) */
 	if (givenRange == 0) {
-		writeADXL(ADXL_REG_FILTER_CTL, 0b00010011);
+		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00010011));
 		range = 0;
 	}
 	else if (givenRange == 1) {
-		writeADXL(ADXL_REG_FILTER_CTL, 0b01010011);
+		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b01010011));
 		range = 1;
 	}
 	else if (givenRange == 2) {
-		writeADXL(ADXL_REG_FILTER_CTL, 0b10010011);
+		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b10010011));
 		range = 2;
 	}
+
+#ifdef DEBUGGING /* DEBUGGING */
+	if (range == 0) dbinfo("Measurement mode +- 2g selected");
+	else if (range == 1) dbinfo("Measurement mode +- 4g selected");
+	else if (range == 2) dbinfo("Measurement mode +- 8g selected");
+#endif /* DEBUGGING */
+
 }
 
 
@@ -188,7 +383,7 @@ void configADXL_range (uint8_t givenRange)
  * @param[in] gThreshold
  *   Threshold [g].
  *****************************************************************************/
-void configADXL_activity (uint16_t gThreshold)
+void configADXL_activity (uint8_t gThreshold)
 {
 	/* Map activity detector to INT1 pin  */
 	writeADXL(ADXL_REG_INTMAP1, 0b00010000); /* Bit 4 selects activity detector */
@@ -200,11 +395,9 @@ void configADXL_activity (uint16_t gThreshold)
 	 * THRESH_ACT [codes] = Threshold Value [g] × Scale Factor [LSB per g] */
 	uint16_t threshold;
 
-	/* TODO: Fix this */
-
 	if (range == 0) threshold = gThreshold * 1000;
 	else if (range == 1) threshold = gThreshold * 500;
-	else if (range == 2) threshold = 250;
+	else if (range == 2) threshold = gThreshold * 250;
 	else threshold = 0;
 
 
@@ -256,6 +449,11 @@ bool checkID_ADXL (void)
  *****************************************************************************/
 int32_t convertGRangeToGValue (int8_t sensorValue)
 {
+	/* 255 = (-) 128 + 127 */
+
+	/* 2 = + & -
+	 * 1000 = "m"g */
+
 	if (range == 0) return ((2*2*1000 / 255) * sensorValue);
 	else if (range == 1) return ((2*4*1000 / 255) * sensorValue);
 	else if (range == 2) return ((2*8*1000 / 255) * sensorValue);
