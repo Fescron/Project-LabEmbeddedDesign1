@@ -1,9 +1,11 @@
 /***************************************************************************//**
  * @file accel.c
  * @brief All code for the ADXL362 accelerometer.
- * @version 1.2
+ * @details Started with code from the UART example (main_series0_HG.c) from SiLabs Github.
+ * @version 2.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
+
 
 #include "../inc/accel.h"
 
@@ -138,7 +140,7 @@ void testADXL (void)
  *
  * @details
  *   The accelerometer is put in measurement mode at 12.5Hz ODR, new
- *   values are displayed every 10ms, if an interrupt was generated
+ *   values are displayed every 100ms, if an interrupt was generated
  *   a delay of one second is called.
  *****************************************************************************/
 void readValuesADXL (void)
@@ -150,12 +152,8 @@ void readValuesADXL (void)
 	reg = reg | 0b00010000; /* ODR (last 3 bits) 12,5Hz */
 	writeADXL(ADXL_REG_FILTER_CTL, reg);
 
-	/* Enable measurements */
-	writeADXL(ADXL_REG_POWER_CTL, 0b00000010); /* Last 2 bits are measurement mode */
-
-#ifdef DEBUGGING /* DEBUGGING */
-	dbinfo("Measurement enabled");
-#endif /* DEBUGGING */
+	/* Enable measurement mode */
+	measureADXL(true);
 
 	/* Infinite loop */
 	while (1)
@@ -184,7 +182,7 @@ void readValuesADXL (void)
 
 		counter++;
 
-		Delay(10);
+		Delay(100);
 
 		/* Read status register to acknowledge interrupt
 		 * (can be disabled by changing LINK/LOOP mode in ADXL_REG_ACT_INACT_CTL) */
@@ -385,6 +383,8 @@ void configADXL_range (uint8_t givenRange)
  *****************************************************************************/
 void configADXL_activity (uint8_t gThreshold)
 {
+	/* TODO: maybe fix masking */
+
 	/* Map activity detector to INT1 pin  */
 	writeADXL(ADXL_REG_INTMAP1, 0b00010000); /* Bit 4 selects activity detector */
 
@@ -400,7 +400,6 @@ void configADXL_activity (uint8_t gThreshold)
 	else if (range == 2) threshold = gThreshold * 250;
 	else threshold = 0;
 
-
 	/* Isolate bits using masks and shifting */
 	uint8_t low  = (threshold & 0b0011111111);
 	uint8_t high = (threshold & 0b1100000000) >> 8;
@@ -408,6 +407,41 @@ void configADXL_activity (uint8_t gThreshold)
 	/* Set threshold register values (total: 11bit unsigned) */
 	writeADXL(ADXL_REG_THRESH_ACT_L, low);  /* 7:0 bits used */
 	writeADXL(ADXL_REG_THRESH_ACT_H, high); /* 2:0 bits used */
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbprint("INFO: Activity configured: ");
+	dbprintInt(gThreshold);
+	dbprintln(" g");
+#endif /* DEBUGGING */
+
+}
+
+/**************************************************************************//**
+ * @brief
+ *   Enable or disable measurement mode.
+ *
+ * @param[in] enabled
+ *   @li True - Enable measurement mode.
+ *   @li False - Disable measurement mode.
+ *****************************************************************************/
+void measureADXL (bool enabled)
+{
+	if (enabled)
+	{
+		/* TODO: fix masking */
+
+		/* Enable measurements */
+		writeADXL(ADXL_REG_POWER_CTL, 0b00000010); /* Last 2 bits are measurement mode */
+
+#ifdef DEBUGGING /* DEBUGGING */
+		dbinfo("Measurement enabled");
+#endif /* DEBUGGING */
+
+	}
+	else
+	{
+		/* TODO */
+	}
 }
 
 

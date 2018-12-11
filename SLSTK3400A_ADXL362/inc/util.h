@@ -19,10 +19,6 @@
 #include "../inc/debugging.h" /* Enable or disable printing to UART */
 
 
-/* Global variables (project-wide accessible) */
-volatile uint32_t msTicks;       /* Volatile because it's a global variable that's modified by an interrupt service routine */
-
-
 /* Prototypes */
 void initLEDS (void);
 void Error (uint8_t number);

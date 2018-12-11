@@ -21,7 +21,7 @@
 
 
 /* Global variables (project-wide accessible) */
-volatile bool triggered; /* TODO: before static - Accelerometer triggered interrupt */
+extern volatile bool triggered; /* TODO: before static - Accelerometer triggered interrupt */
 
 
 #endif /* _HANDLERS_H_ */

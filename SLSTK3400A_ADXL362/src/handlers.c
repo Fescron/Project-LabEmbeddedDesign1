@@ -9,6 +9,7 @@
 #include "../inc/handlers.h"
 
 
+/* Global variables */
 volatile bool triggered = false; /* Accelerometer triggered interrupt */
 
 

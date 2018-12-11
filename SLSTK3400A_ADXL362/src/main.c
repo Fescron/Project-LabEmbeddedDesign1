@@ -1,8 +1,7 @@
 /***************************************************************************//**
  * @file main.c
  * @brief The main file for the program to interface to the accelerometer.
- * @details Started with code from the UART example (main_series0_HG.c) from SiLabs Github.
- * @version 1.2
+ * @version 2.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -166,6 +165,10 @@ int main (void)
 	/* Set the measurement range (0 - 1 - 2) */
 	configADXL_range(1);
 
+	/* Read and display values forever */
+	//readValuesADXL();
+
+
 	/* Configure activity detection on INT1 */
 	configADXL_activity(3); /* [g] */
 
@@ -175,14 +178,11 @@ int main (void)
 
 
 	/* Enable measurements */
-	writeADXL(ADXL_REG_POWER_CTL, 0b00000010); /* Last 2 bits are measurement mode */
+	measureADXL(true);
 
 #ifdef DEBUGGING /* DEBUGGING */
-	dbinfo("Measurement enabled");
+	dbprintln("");
 #endif /* DEBUGGING */
-
-	/* Read and display values forever */
-	//readValuesADXL();
 
 	while(1)
 	{
@@ -201,6 +201,7 @@ int main (void)
 #ifdef DEBUGGING /* DEBUGGING */
 	dbinfo("Disabling systick & going to sleep...\r\n");
 #endif /* DEBUGGING */
+
 		disableSystick();
 		EMU_EnterEM2(true); /* "true": Save and restore oscillators, clocks and voltage scaling */
 		enableSystick();

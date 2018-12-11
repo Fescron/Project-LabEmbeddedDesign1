@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file accel.h
  * @brief All code for the ADXL362 accelerometer
- * @version 1.2
+ * @version 2.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -57,11 +57,6 @@
 #define ADXL_REG_POWER_CTL 		0x2D /* Write xxxx xxMM (MM = 10) to: measurement mode */
 
 
-/* Global variables (project-wide accessible) */
-volatile int8_t XYZDATA[3];
-uint8_t range;
-
-
 /* Prototypes */
 void initADXL_SPI (void);
 
@@ -70,9 +65,9 @@ void resetHandlerADXL (void);
 
 uint8_t readADXL (uint8_t address);
 void writeADXL (uint8_t address, uint8_t data);
-
 void readADXL_XYZDATA (void);
 
+void measureADXL (bool enabled);
 void configADXL_range (uint8_t givenRange);
 void configADXL_activity (uint8_t gThreshold);
 

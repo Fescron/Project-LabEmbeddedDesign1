@@ -9,6 +9,10 @@
 #include "../inc/util.h"
 
 
+/* Global variables */
+volatile uint32_t msTicks; /* Volatile because it's a global variable that's modified by an interrupt service routine */
+
+
 /**************************************************************************//**
  * @brief
  *   Initialize the onboard LED's.
