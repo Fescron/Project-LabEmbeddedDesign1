@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file accel.h
- * @brief All code for the ADXL362 accelerometer
+ * @brief All code for the ADXL362 accelerometer.
  * @version 2.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/

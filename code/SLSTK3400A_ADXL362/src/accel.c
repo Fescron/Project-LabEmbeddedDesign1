@@ -74,13 +74,13 @@ void testADXL (void)
 {
 
 #ifdef DEBUGGING /* DEBUGGING */
-	dbprintln("Waiting 5 seconds...");
+	dbwarn("Waiting 5 seconds...");
 #endif /* DEBUGGING */
 
 	Delay(5000);
 
 #ifdef DEBUGGING /* DEBUGGING */
-	dbprintln("Starting...");
+	dbwarn("Starting...");
 #endif /* DEBUGGING */
 
 #ifdef DEBUGGING /* DEBUGGING */
@@ -409,9 +409,7 @@ void configADXL_activity (uint8_t gThreshold)
 	writeADXL(ADXL_REG_THRESH_ACT_H, high); /* 2:0 bits used */
 
 #ifdef DEBUGGING /* DEBUGGING */
-	dbprint("INFO: Activity configured: ");
-	dbprintInt(gThreshold);
-	dbprintln(" g");
+	dbinfoInt("Activity configured: ", gThreshold, " g", false);
 #endif /* DEBUGGING */
 
 }
@@ -464,6 +462,7 @@ void softResetADXL (void)
  *****************************************************************************/
 bool checkID_ADXL (void)
 {
+	uint8_t test = readADXL(ADXL_REG_DEVID_AD);
 	return (readADXL(ADXL_REG_DEVID_AD) == 0xAD);
 }
 

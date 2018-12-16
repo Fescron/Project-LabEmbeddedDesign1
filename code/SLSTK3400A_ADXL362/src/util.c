@@ -41,9 +41,7 @@ void Error (uint8_t number)
 {
 
 #ifdef DEBUGGING /* DEBUGGING */
-	dbprint(">>> Error (");
-	dbprintInt(number);
-	dbprintln(")! Please reset MCU. <<<");
+	dbcritInt(">>> Error (", number, ")! Please reset MCU. <<<", false);
 #endif /* DEBUGGING */
 
 	GPIO_PinOutClear(gpioPortF, 4); /* Disable LED0 */
