@@ -34,9 +34,29 @@ TODO (flowchart)
 
 ------
 
-## 3 - Future
+## 3 - Development problems
 
-### 3.1 - Wakeup-mode
+Along the way there were some hiccups in the code-development. The main problem we faced at first is discussed in short below.
+
+We first left `automatic ChipSelect` enabled but after looking at the `SPI` bus with a logic analyser where we expected a *soft reset* we noticed incorrect behaviour, depicted below. 
+
+![Auto CS = true](/doc/reports/figures/ADXL-reset-autoCStrue.png?raw=true "Auto CS = true")
+
+**As seen above, the ChipSelect pin goes low for each byte. This is not the correct behaviour, since it needs to stay low for three bytes** (`register address`- `read/write` - `value to read/write`). After manually setting the CS pin high and low we got the correct behaviour, as depicted below.
+
+![Auto CS = false](/doc/reports/figures/ADXL-reset-autoCSfalse-CSPD4.png?raw=true "Auto CS = false")
+
+The same behaviour was observed when we tried to *read a register*. The first picture below is the incorrect behaviour, afterwards we see the accelerometer responding correctly.
+
+![Auto CS = true](/doc/reports/figures/ADXL-read-autoCStrue.png?raw=true "Auto CS = true")
+
+![Auto CS = false](/doc/reports/figures/ADXL-read-autoCSfalse-CSPD4.png?raw=true "Auto CS = false")
+
+------
+
+## 4 - Future
+
+### 4.1 - Wakeup-mode
 
 The accelerometer can be put in a `wakeup-mode` where he only consumes about **270 nA** (@2.0V) and measures the acceleration *about six times per second* to determine whether motion is present or absent. If motion is detected, the accelerometer can respond autonomously in the following ways:
 - Switch into full bandwidth measurement mode.
@@ -47,13 +67,13 @@ In wake-up mode, all accelerometer features are available with the exception of 
 
 **This was not (yet) implemented since it would be very hard to measure these very small current differences. Therefor it would be hard to check if the accelerometer behaves like it should, and the time to get this working would perhaps better be used somewhere else...**
 
-### 3.2 - FIFO and wave frequency
+### 4.2 - FIFO and wave frequency
 
 We can perhaps use the `FIFO` to store measurements at an optimal `ODR` (Output Data Rate) so the **wave frequency** can be calculated using *FFT* functionality available in `CMSIS` libraries. The accelerometer could fill this FIFO on it's own and signal to the microcontroller when it is filled by using an interrupt (there is still one pin unused). Then the microcontroller can read all these values at once and calculate the frequency, after which he again goes to sleep. *We also need to look into the amount of samples we need for this to work.*
 
 ------
 
-## 4 - Current measurements
+## 5 - Current measurements
 
 These are rough measurements (16-12-2018), the values were not read from the sensor, it was only put in measurement mode at the given ODR:
 - ODR 12,5 HZ ~ 29,60 - 30,41 µA
