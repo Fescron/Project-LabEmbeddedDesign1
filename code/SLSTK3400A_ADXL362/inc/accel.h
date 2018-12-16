@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file accel.h
  * @brief All code for the ADXL362 accelerometer.
- * @version 2.0
+ * @version 2.1
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -23,7 +23,7 @@
 #include "../inc/debugging.h" /* Enable or disable printing to UART */
 
 
-/* ADXL GPOI */
+/* ADXL SPI GPOI */
 #define ADXL_CLK_PORT gpioPortE
 #define ADXL_CLK_PIN 12
 #define ADXL_MOSI_PORT gpioPortE
@@ -32,8 +32,12 @@
 #define ADXL_MISO_PIN 11
 #define ADXL_NCS_PORT gpioPortD 	/* Can't use the US0_CS port (PE13) to manually set/clear CS line */
 #define ADXL_NCS_PIN 4
+
+/* Other ADXL GPOI */
 #define ADXL_INT1_PORT gpioPortD
 #define ADXL_INT1_PIN 7
+#define ADXL_VCC_PORT gpioPortD
+#define ADXL_VCC_PIN 5
 
 
 /* ADXL REGISTERS */
@@ -58,7 +62,12 @@
 
 
 /* Prototypes */
+void initADXL_VCC (void);
+void powerADXL (bool enabled);
+
 void initADXL_SPI (void);
+
+void testADXL (void);
 
 void readValuesADXL (void);
 void resetHandlerADXL (void);
@@ -69,6 +78,7 @@ void readADXL_XYZDATA (void);
 
 void measureADXL (bool enabled);
 void configADXL_range (uint8_t givenRange);
+void configADXL_ODR (uint8_t givenODR);
 void configADXL_activity (uint8_t gThreshold);
 
 void softResetADXL (void);

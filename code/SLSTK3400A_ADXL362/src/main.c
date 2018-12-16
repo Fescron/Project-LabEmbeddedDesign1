@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file main.c
  * @brief The main file for the program to interface to the accelerometer.
- * @version 2.0
+ * @version 2.1
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -11,7 +11,9 @@
  *   PE10: MOSI
  *   PE11: MISO
  *   PE12: CLK
+ *
  *   PD4: NCS
+ *   PD5: VCC
  *
  *   PD7: INT1
  *
@@ -132,18 +134,23 @@ int main (void)
 	/* Initialize RTC compare settings */
 	initRTCC();
 
+	/* Initialize GPIO wakeup */
+	initWakeup();
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbprint_INIT(USART1, 4, true, false); /* VCOM */
+	//dbprint_INIT(USART1, 0, false, false); /* US1_TX = PC0 */
+#endif /* DEBUGGING */
+
+	/* Initialize VCC GPIO and turn the power to the accelerometer on */
+	initADXL_VCC();
+
 	/* Initialize USART0 as SPI slave (also initialize CS pin) */
 	initADXL_SPI();
 
 	/* Initialize LED's */
 	initLEDS();
 
-	/* Initialize GPIO wakeup */
-	initWakeup();
-
-#ifdef DEBUGGING /* DEBUGGING */
-	dbprint_INIT(USART1, 4, true, false);
-#endif /* DEBUGGING */
 
 	/* TODO: this doesn't seem to change anything */
 	/* Configure PA8 as an output (EFM_DISP_ENABLE) */
@@ -151,7 +158,6 @@ int main (void)
 
 	/* Set EFM_DISP_ENABLE low to disable LCD */
 	//GPIO_PinOutClear(gpioPortA, 8);
-
 
 
 	/* Soft reset ADXL handler */
@@ -163,7 +169,11 @@ int main (void)
 
 
 	/* Set the measurement range (0 - 1 - 2) */
-	configADXL_range(1);
+	configADXL_range(1); /* 0 = +-2g -- 1 = +-4g -- 3 = +-8g */
+
+	/* Configure ODR (0 - 1 - 2 - 3 - 4 - 5) */
+	configADXL_ODR(0); /* 0 = 12.5 Hz -- 3 = 100 Hz (reset default) */
+
 
 	/* Read and display values forever */
 	//readValuesADXL();
@@ -173,7 +183,7 @@ int main (void)
 	configADXL_activity(3); /* [g] */
 
 	/* Enable wake-up mode */
-	/* TODO: Fix this */
+	/* TODO: Maybe implement this in the future... */
 	//writeADXL(ADXL_REG_POWER_CTL, 0b00001000); /* 5th bit */
 
 

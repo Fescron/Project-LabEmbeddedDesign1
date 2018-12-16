@@ -2,7 +2,7 @@
  * @file accel.c
  * @brief All code for the ADXL362 accelerometer.
  * @details Started with code from the UART example (main_series0_HG.c) from SiLabs Github.
- * @version 2.0
+ * @version 2.1
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -13,6 +13,52 @@
 /* Global variables */
 volatile int8_t XYZDATA[3] = { 0x00, 0x00, 0x00 };
 uint8_t range = 0;
+
+
+/**************************************************************************//**
+ * @brief
+ *   Initialize the GPIO pin to supply the accelerometer with power.
+ *****************************************************************************/
+void initADXL_VCC (void)
+{
+	GPIO_PinModeSet(ADXL_VCC_PORT, ADXL_VCC_PIN, gpioModePushPull, 1);
+	GPIO_PinOutSet(ADXL_VCC_PORT, ADXL_VCC_PIN);   /* Enable VCC pin */
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbinfo("Accelerometer powered");
+#endif /* DEBUGGING */
+
+}
+
+/**************************************************************************//**
+ * @brief
+ *   Enable or disable the power to the accelerometer.
+ *
+ * @param[in] enabled
+ *   @li True - Enable the GPIO pin connected to the VCC pin of the accelerometer.
+ *   @li False - Disable the GPIO pin connected to the VCC pin of the accelerometer.
+ *****************************************************************************/
+void powerADXL (bool enabled)
+{
+	if (enabled)
+	{
+		GPIO_PinOutSet(ADXL_VCC_PORT, ADXL_VCC_PIN); /* Enable VCC pin */
+
+#ifdef DEBUGGING /* DEBUGGING */
+		dbinfo("Accelerometer powered");
+#endif /* DEBUGGING */
+
+	}
+	else
+	{
+		GPIO_PinOutClear(ADXL_VCC_PORT, ADXL_VCC_PIN); /* Disable VCC pin */
+
+#ifdef DEBUGGING /* DEBUGGING */
+		dbwarn("Accelerometer powered down");
+#endif /* DEBUGGING */
+
+	}
+}
 
 
 /**************************************************************************//**
@@ -62,6 +108,11 @@ void initADXL_SPI (void)
 
 	/* Set CS high (active low!) */
 	GPIO_PinOutSet(gpioPortE, 13);
+
+#ifdef DEBUGGING /* DEBUGGING */
+	dbinfo("Accelerometer SPI initialized");
+#endif /* DEBUGGING */
+
 }
 
 
@@ -147,11 +198,6 @@ void readValuesADXL (void)
 {
 	uint32_t counter = 0;
 
-	/* Get (range) settings */
-	uint8_t reg = readADXL(ADXL_REG_FILTER_CTL);
-	reg = reg | 0b00010000; /* ODR (last 3 bits) 12,5Hz */
-	writeADXL(ADXL_REG_FILTER_CTL, reg);
-
 	/* Enable measurement mode */
 	measureADXL(true);
 
@@ -206,48 +252,60 @@ void readValuesADXL (void)
  *****************************************************************************/
 void resetHandlerADXL (void)
 {
+	uint8_t retries = 0;
+
 	/* Soft reset ADXL */
 	softResetADXL();
 
-	/* Read DEVID_AD */
-	if (checkID_ADXL())
+	/* First try to get the correct ID failed */
+	if (!checkID_ADXL())
 	{
-
-#ifdef DEBUGGING /* DEBUGGING */
-		dbinfo("Soft reset ADXL - correct ID!");
-#endif /* DEBUGGING */
-
-	}
-	else
-	{
-
-#ifdef DEBUGGING /* DEBUGGING */
-		dbwarn("Soft reset ADXL - Incorrect ID!");
-#endif /* DEBUGGING */
+		retries++;
 
 		Delay(1000);
 
 		/* Soft reset */
 		softResetADXL();
 
-		if (checkID_ADXL())
+		/* Second try to get the correct ID failed */
+		if (!checkID_ADXL())
 		{
+			retries++;
 
-#ifdef DEBUGGING /* DEBUGGING */
-			dbinfo("Retry soft reset - correct ID!");
-#endif /* DEBUGGING */
+			Delay(1000);
 
-		}
-		else
-		{
+			/* Soft reset */
+			softResetADXL();
 
-#ifdef DEBUGGING /* DEBUGGING */
-			dbcrit("Retry soft reset - Incorrect ID!");
-#endif /* DEBUGGING */
+			/* Third try to get the correct ID failed
+			 * resorting to "hard" reset! */
+			if (!checkID_ADXL())
+			{
+				retries++;
 
-			Error(0);
+				powerADXL(false);
+				Delay(1000);
+				powerADXL(true);
+
+				Delay(1000);
+
+				/* Soft reset */
+				softResetADXL();
+
+				/* Last try to get the correct ID failed */
+				if (!checkID_ADXL())
+				{
+					Error(0);
+				}
+			}
 		}
 	}
+
+#ifdef DEBUGGING /* DEBUGGING */
+	if (retries < 2) dbinfoInt("Soft reset ADXL done (", retries, " retries)", false);
+	else dbwarnInt("Soft reset ADXL done, had to \"hard reset\" (", retries, " retries)", false);
+#endif /* DEBUGGING */
+
 }
 
 
@@ -332,6 +390,50 @@ void readADXL_XYZDATA (void)
 
 /**************************************************************************//**
  * @brief
+ *   Configure the Output Data Rate (ODR).
+ *
+ * @param[in] givenODR
+ *   @li 0 - 12.5 Hz
+ *   @li 1 - 25 Hz
+ *   @li 2 - 50 Hz
+ *   @li 3 - 100 Hz (reset default)
+ *   @li 4 - 200 Hz
+ *   @li 5 - 400 Hz
+ *****************************************************************************/
+void configADXL_ODR (uint8_t givenODR)
+{
+	/* Get value in register */
+	uint8_t reg = readADXL(ADXL_REG_FILTER_CTL);
+
+	/* AND with mask to keep the bits we don't want to change */
+	reg = reg & 0b11111000;
+
+	/* OR with new setting bits */
+
+	/* Set ODR (last three bits) */
+	if (givenODR == 0) writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00000000));
+	if (givenODR == 1) writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00000001));
+	if (givenODR == 2) writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00000010));
+	if (givenODR == 3) writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00000011));
+	if (givenODR == 4) writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00000100));
+	if (givenODR == 5) writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00000101));
+	else writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00000011));
+
+#ifdef DEBUGGING /* DEBUGGING */
+	if (givenODR == 0) dbinfo("ODR set at 12.5 Hz");
+	else if (givenODR == 1) dbinfo("ODR set at 25 Hz");
+	else if (givenODR == 2) dbinfo("ODR set at 50 Hz");
+	else if (givenODR == 3) dbinfo("ODR set at 100 Hz");
+	else if (givenODR == 4) dbinfo("ODR set at 200 Hz");
+	else if (givenODR == 5) dbinfo("ODR set at 400 Hz");
+	else dbinfo("ODR set at 100 Hz (reset default)");
+#endif /* DEBUGGING */
+
+}
+
+
+/**************************************************************************//**
+ * @brief
  *   Configure the measurement range and store the selected one in
  *   a global variable.
  *
@@ -345,19 +447,22 @@ void configADXL_range (uint8_t givenRange)
 	/* Get value in register */
 	uint8_t reg = readADXL(ADXL_REG_FILTER_CTL);
 
-	/* TODO: fix masking */
+	/* AND with mask to keep the bits we don't want to change */
+	reg = reg & 0b00111111;
+
+	/* OR with new setting bits */
 
 	/* Set measurement range (first two bits) */
 	if (givenRange == 0) {
-		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00010011));
+		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b00000000));
 		range = 0;
 	}
 	else if (givenRange == 1) {
-		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b01010011));
+		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b01000000));
 		range = 1;
 	}
 	else if (givenRange == 2) {
-		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b10010011));
+		writeADXL(ADXL_REG_FILTER_CTL, (reg | 0b10000000));
 		range = 2;
 	}
 
@@ -383,8 +488,6 @@ void configADXL_range (uint8_t givenRange)
  *****************************************************************************/
 void configADXL_activity (uint8_t gThreshold)
 {
-	/* TODO: maybe fix masking */
-
 	/* Map activity detector to INT1 pin  */
 	writeADXL(ADXL_REG_INTMAP1, 0b00010000); /* Bit 4 selects activity detector */
 
@@ -420,16 +523,22 @@ void configADXL_activity (uint8_t gThreshold)
  *
  * @param[in] enabled
  *   @li True - Enable measurement mode.
- *   @li False - Disable measurement mode.
+ *   @li False - Disable measurement mode (standby).
  *****************************************************************************/
 void measureADXL (bool enabled)
 {
 	if (enabled)
 	{
-		/* TODO: fix masking */
+		/* Get value in register */
+		uint8_t reg = readADXL(ADXL_REG_POWER_CTL);
+
+		/* AND with mask to keep the bits we don't want to change */
+		reg = reg & 0b11111100;
+
+		/* OR with new setting bits */
 
 		/* Enable measurements */
-		writeADXL(ADXL_REG_POWER_CTL, 0b00000010); /* Last 2 bits are measurement mode */
+		writeADXL(ADXL_REG_POWER_CTL, reg | 0b00000010); /* Last 2 bits are measurement mode */
 
 #ifdef DEBUGGING /* DEBUGGING */
 		dbinfo("Measurement enabled");
@@ -438,7 +547,20 @@ void measureADXL (bool enabled)
 	}
 	else
 	{
-		/* TODO */
+		/* Get value in register */
+		uint8_t reg = readADXL(ADXL_REG_POWER_CTL);
+
+		/* AND with mask to keep the bits we don't want to change */
+		reg = reg & 0b11111100;
+
+		/* OR with new setting bits */
+
+		/* Enable measurements */
+		writeADXL(ADXL_REG_POWER_CTL, reg | 0b00000000); /* Last 2 bits are measurement mode */
+
+#ifdef DEBUGGING /* DEBUGGING */
+		dbinfo("Measurement disabled (standby)");
+#endif /* DEBUGGING */
 	}
 }
 
@@ -462,7 +584,6 @@ void softResetADXL (void)
  *****************************************************************************/
 bool checkID_ADXL (void)
 {
-	uint8_t test = readADXL(ADXL_REG_DEVID_AD);
 	return (readADXL(ADXL_REG_DEVID_AD) == 0xAD);
 }
 

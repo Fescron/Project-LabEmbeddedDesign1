@@ -22,7 +22,7 @@
 /* Prototypes */
 void initLEDS (void);
 void Error (uint8_t number);
-void Delay (uint32_t dlyTicks);  /* TODO before: Static so the function is only "seen" in the file it's declared in. */
+void Delay (uint32_t dlyTicks);
 void disableSystick (void);
 void enableSystick (void);
 
