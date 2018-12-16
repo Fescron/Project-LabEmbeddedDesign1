@@ -36,13 +36,15 @@ TODO (flowchart)
 
 ## 3 - Development problems
 
-Along the way there were some hiccups in the code-development. The main problem we faced at first is discussed in short below.
+Along the way there were some hiccups in the code-development. The main problem we first faced is discussed in short below.
 
-We first left `automatic ChipSelect` enabled but after looking at the `SPI` bus with a logic analyser where we expected a *soft reset* we noticed incorrect behaviour, depicted below. 
+We first left `automatic ChipSelect` in the `USART config` enabled. After getting no response from the accelerometer we observed the `SPI` bus with a logic analyser. Below we see the incorrect behaviour, normally the accelerometer should perform a **soft reset**. 
 
 ![Auto CS = true](/doc/reports/figures/ADXL-reset-autoCStrue.png?raw=true "Auto CS = true")
 
-**As seen above, the ChipSelect pin goes low for each byte. This is not the correct behaviour, since it needs to stay low for three bytes** (`register address`- `read/write` - `value to read/write`). After manually setting the CS pin high and low we got the correct behaviour, as depicted below.
+**As seen above, the ChipSelect pin goes low for each byte. This is not the correct behaviour, since it needs to stay low for three bytes** (`register address`- `read/write` - `value to read/write`).
+
+After manually setting the CS pin high and low we got the correct behaviour, as depicted below.
 
 ![Auto CS = false](/doc/reports/figures/ADXL-reset-autoCSfalse-CSPD4.png?raw=true "Auto CS = false")
 
