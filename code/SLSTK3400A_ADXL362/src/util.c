@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file util.c
  * @brief Utility functions.
- * @version 2.0
+ * @version 3.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -19,10 +19,25 @@ volatile uint32_t msTicks; /* Volatile because it's a global variable that's mod
  *****************************************************************************/
 void initLEDS (void)
 {
-	GPIO_PinModeSet(gpioPortF, 4, gpioModePushPull, 1); /* LED0 */
-	GPIO_PinModeSet(gpioPortF, 5, gpioModePushPull, 1); /* LED1 */
-	GPIO_PinOutClear(gpioPortF, 4); /* Disable LED0 */
-	GPIO_PinOutClear(gpioPortF, 5); /* Disable LED1 */
+	GPIO_PinModeSet(LED0_PORT, LED0_PIN, gpioModePushPull, 1);
+	GPIO_PinModeSet(LED1_PORT, LED1_PIN, gpioModePushPull, 1);
+	GPIO_PinOutClear(LED0_PORT, LED0_PIN); /* Disable LED0 */
+	GPIO_PinOutClear(LED1_PORT, LED1_PIN); /* Disable LED1 */
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Enable or disable LED0.
+ *
+ * @param[in] enabled
+ *   @li True - Enable LED0
+ *   @li False - Disable LED0.
+ *****************************************************************************/
+void led0 (bool enabled)
+{
+	if (enabled) GPIO_PinOutSet(LED0_PORT, LED0_PIN);
+	else GPIO_PinOutClear(LED0_PORT, LED0_PIN);
 }
 
 
@@ -44,14 +59,14 @@ void Error (uint8_t number)
 	dbcritInt(">>> Error (", number, ")! Please reset MCU. <<<", false);
 #endif /* DEBUGGING */
 
-	GPIO_PinOutClear(gpioPortF, 4); /* Disable LED0 */
-	GPIO_PinOutSet(gpioPortF, 5);   /* Enable LED1 */
+	GPIO_PinOutClear(LED0_PORT, LED0_PIN); /* Disable LED0 */
+	GPIO_PinOutSet(LED1_PORT, LED1_PIN);   /* Enable LED1 */
 
 	while(1)
 	{
 		Delay(100);
-		GPIO_PinOutToggle(gpioPortF, 4); /* Toggle LED0 */
-		GPIO_PinOutToggle(gpioPortF, 5); /* Toggle LED1 */
+		GPIO_PinOutToggle(LED0_PORT, LED0_PIN); /* Toggle LED0 */
+		GPIO_PinOutToggle(LED1_PORT, LED1_PIN); /* Toggle LED1 */
 	}
 }
 
@@ -83,27 +98,19 @@ void Delay (uint32_t dlyTicks)
 
 /**************************************************************************//**
  * @brief
- *   Disable SysTick interrupt and counter by clearing their bits.
+ *   Disable
  *
  * @note
  *   SysTick interrupt and counter (used by Delay) need to
  *   be disabled before going to EM2.
- *****************************************************************************/
-void disableSystick (void)
-{
-	SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk & ~SysTick_CTRL_ENABLE_Msk;
-}
-
-
-/**************************************************************************//**
- * @brief
- *   Enable SysTick interrupt and counter by setting their bits.
  *
- * @note
- *   SysTick interrupt and counter (used by Delay) need to
- *   be enabled after waking up from EM2.
+ * @param[in] enabled
+ *   @li True - Enable SysTick interrupt and counter by setting their bits.
+ *   @li False - Disable SysTick interrupt and counter by clearing their bits.
  *****************************************************************************/
-void enableSystick (void)
+void systickInterrupts (bool enabled)
 {
-	SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+	if (enabled) SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+	else SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk & ~SysTick_CTRL_ENABLE_Msk;
 }
+

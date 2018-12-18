@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file accel.h
  * @brief All code for the ADXL362 accelerometer.
- * @version 2.1
+ * @version 3.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -24,20 +24,20 @@
 
 
 /* ADXL SPI GPOI */
-#define ADXL_CLK_PORT gpioPortE
-#define ADXL_CLK_PIN 12
+#define ADXL_CLK_PORT  gpioPortE
+#define ADXL_CLK_PIN   12
 #define ADXL_MOSI_PORT gpioPortE
-#define ADXL_MOSI_PIN 10
+#define ADXL_MOSI_PIN  10
 #define ADXL_MISO_PORT gpioPortE
-#define ADXL_MISO_PIN 11
-#define ADXL_NCS_PORT gpioPortD 	/* Can't use the US0_CS port (PE13) to manually set/clear CS line */
-#define ADXL_NCS_PIN 4
+#define ADXL_MISO_PIN  11
+#define ADXL_NCS_PORT  gpioPortD 	/* Can't use the US0_CS port (PE13) to manually set/clear CS line */
+#define ADXL_NCS_PIN   4
 
 /* Other ADXL GPOI */
 #define ADXL_INT1_PORT gpioPortD
-#define ADXL_INT1_PIN 7
-#define ADXL_VCC_PORT gpioPortD
-#define ADXL_VCC_PIN 5
+#define ADXL_INT1_PIN  7
+#define ADXL_VCC_PORT  gpioPortD
+#define ADXL_VCC_PIN   5
 
 
 /* ADXL REGISTERS */

@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file main.c
  * @brief The main file for the program to interface to the accelerometer.
- * @version 2.1
+ * @version 3.0
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -59,7 +59,7 @@
  *   Initialize buttons PB0 and PB1 on falling-edge interrupts and
  *   ADXL_INT1 on rising-edge interrupts.
  *****************************************************************************/
-void initWakeup (void)
+void initGPIOwakeup (void)
 {
 	/* Enable necessary clock */
 	CMU_ClockEnable(cmuClock_GPIO, true);
@@ -89,7 +89,7 @@ void initWakeup (void)
 /**************************************************************************//**
  * @brief RTCC initialization
  *****************************************************************************/
-void initRTCC (void)
+void initRTCcomp (void)
 {
 	/* Enable the oscillator for the RTC */
 	CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
@@ -132,10 +132,10 @@ int main (void)
 	if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) while (1);
 
 	/* Initialize RTC compare settings */
-	initRTCC();
+	initRTCcomp();
 
 	/* Initialize GPIO wakeup */
-	initWakeup();
+	initGPIOwakeup();
 
 #ifdef DEBUGGING /* DEBUGGING */
 	dbprint_INIT(USART1, 4, true, false); /* VCOM */
@@ -196,9 +196,9 @@ int main (void)
 
 	while(1)
 	{
-		GPIO_PinOutSet(gpioPortF, 4); /* Enable LED0 */
+		led0(true); /* Enable LED0 */
 		Delay(1000);
-		GPIO_PinOutClear(gpioPortF, 4); /* Disable LED0 */
+		led0(false); /* Disable LED0 */
 
 		/* Read status register to acknowledge interrupt
 		 * (can be disabled by changing LINK/LOOP mode in ADXL_REG_ACT_INACT_CTL) */
@@ -212,8 +212,8 @@ int main (void)
 	dbinfo("Disabling systick & going to sleep...\r\n");
 #endif /* DEBUGGING */
 
-		disableSystick();
+		systickInterrupts(false); /* Disable SysTick interrupts */
 		EMU_EnterEM2(true); /* "true": Save and restore oscillators, clocks and voltage scaling */
-		enableSystick();
+		systickInterrupts(true); /* Enable SysTick interrupts */
 	}
 }

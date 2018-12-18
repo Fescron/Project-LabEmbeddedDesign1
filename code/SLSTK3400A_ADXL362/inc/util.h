@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file util.h
  * @brief Utility functions.
- * @version 2.0
+ * @version 3.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -19,12 +19,19 @@
 #include "../inc/debugging.h" /* Enable or disable printing to UART */
 
 
+/* PORT and PIN definitoons */
+#define LED0_PORT gpioPortF
+#define LED0_PIN  4
+#define LED1_PORT gpioPortF
+#define LED1_PIN  5
+
+
 /* Prototypes */
 void initLEDS (void);
+void led0 (bool enabled);
 void Error (uint8_t number);
 void Delay (uint32_t dlyTicks);
-void disableSystick (void);
-void enableSystick (void);
+void systickInterrupts (bool enabled);
 
 
 #endif /* _UTIL_H_ */

@@ -2,7 +2,7 @@
  * @file accel.c
  * @brief All code for the ADXL362 accelerometer.
  * @details Started with code from the UART example (main_series0_HG.c) from SiLabs Github.
- * @version 2.1
+ * @version 3.0
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -187,7 +187,7 @@ void testADXL (void)
 
 /**************************************************************************//**
  * @brief
- *   Read and display g values forever with a one second interval.
+ *   Read and display g values forever with a 100ms interval.
  *
  * @details
  *   The accelerometer is put in measurement mode at 12.5Hz ODR, new
@@ -204,7 +204,7 @@ void readValuesADXL (void)
 	/* Infinite loop */
 	while (1)
 	{
-		GPIO_PinOutSet(gpioPortF, 4); /* Enable LED0 */
+		led0(true); /* Enable LED0 */
 
 		/* Read XYZ sensor data */
 		readADXL_XYZDATA();
@@ -224,7 +224,7 @@ void readValuesADXL (void)
 		//dbprintln("");
 #endif /* DEBUGGING */
 
-		GPIO_PinOutClear(gpioPortF, 4); /* Disable LED0 */
+		led0(false); /* Disable LED0 */
 
 		counter++;
 
@@ -576,7 +576,7 @@ void softResetADXL (void)
 
 
 /**************************************************************************//**
- * @brief Check if the ID is correct
+ * @brief Check if the ID is correct.
  *
  * @return
  *   @li true - Correct ID returned.

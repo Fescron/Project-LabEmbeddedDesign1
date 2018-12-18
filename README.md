@@ -63,7 +63,7 @@ These are all of the files we've created to make the project more *readable*:
 - `util.c` (& `util.h`)
   - Here we have some *utility functionality* like:
     - A **Delay** method with it's **interrupt handler** and a function to **enable or disable** `systicks`.
-    - A method to **initialize the LED's**.
+    - A method to **initialize the LED's** and to **turn on or off LED0**.
     - A method to **stop code execution when an error occured**.
   
 - `handlers.c` (& `handlers.h`)
