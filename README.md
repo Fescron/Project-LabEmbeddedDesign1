@@ -10,11 +10,11 @@ The main project also uses code from **dbprint**, this needs to be added alongsi
 
 ## 1 - GIT repo structure
 
-### 1.1 - code/SLSTK3400A_blink-unoptimized
+### 1.1 - code/SLSTK3400A_blink-unoptimized/
 
 This is an un-optimized **blink** example which was created at the start of the lab sessions to get to know *Simplicity Studio*. The code created here is referenced in [this report](doc/reports/EmbeddedDesign1-labo1-2-BrechtVanEeckhoudt-ChrisThoen.pdf) (Dutch).
 
-### 1.2 - code/SLSTK3400A_blink-optimized
+### 1.2 - code/SLSTK3400A_blink-optimized/
 
 This is an optimized **blink** example which was created at the start of the lab sessions to get to know *Simplicity Studio*. The code created here is referenced in [this report](doc/reports/EmbeddedDesign1-labo1-2-BrechtVanEeckhoudt-ChrisThoen.pdf) (Dutch).
 
@@ -26,7 +26,7 @@ This is the main code developed for the project for the lab sessions. This is wh
 
 ## 2 - Documentation
 
-**The following documentation is all about** `code/SLSTK3400A_ADXL362`.
+**The following documentation is all about** `code/SLSTK3400A_ADXL362/`.
 
 <br/>
 
@@ -109,9 +109,13 @@ We first left `automatic ChipSelect` in the `USART config` enabled. After gettin
 
 **As seen above, the ChipSelect pin goes low for each byte. This is not the correct behaviour, since it needs to stay low for three bytes** (`register address`- `read/write` - `value to read/write`).
 
+<br/>
+
 After manually setting the CS pin high and low we got the correct behaviour, as depicted below.
 
 ![Auto CS = false](/doc/reports/figures/ADXL-reset-autoCSfalse-CSPD4.png?raw=true "Auto CS = false")
+
+<br/>
 
 The same behaviour was observed when we tried to *read a register*. The first picture below is the incorrect behaviour, afterwards we see the accelerometer responding correctly.
 
@@ -155,3 +159,7 @@ These are rough measurements (16-12-2018), the values were not read from the sen
 - ODR 400 Hz ~ 35,43 - 36 µA
 
 **The microcontroller was manually reset each time using the button to get these "correct" values.**
+
+<br/>
+
+**More current measurements can be found at [doc/reports/current-measurements/](/doc/reports/current-measurements)**
