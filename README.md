@@ -26,9 +26,74 @@ This is the main code developed for the project for the lab sessions. This is wh
 
 ## 2 - Documentation
 
-TODO
+**The following documentation is all about** `code/SLSTK3400A_ADXL362`.
 
-### 2.1 - Code flow
+<br/>
+
+### 2.1 - File structure
+
+#### 2.1.1 - Header and source files
+
+The corresponding `header` (`.h`) and `source` (`.c`) files are placed in the respective folders `inc` and `src`.
+
+In the **header** files we've put:
+
+- PIN and REGISTER definitions
+- Method prototypes
+- Public variables
+
+In the **source** files we've put:
+
+- All of the documentation
+- The function implementations
+- The variable instantiations
+
+<br/>
+
+#### 2.1.2 - Used files
+
+These are all of the files we've created to make the project more *readable*:
+
+- `main.c`
+  - Here is the **main method** where everything starts from. We've also added **two initialisation methods** that configure the `EMF32` to **wakeup from pin interrupts** and/or it's **`RTC compare` ability**.
+  
+- `debuging.h`
+  - Here we can **enable or disable debugging over UART** by (un)commenting one `#define` line. This file is called in every other file where there are UART (`dbprint`) calls. Because these calls are surrounded by `#ifdef DEBUGGING ... #endif` tags, the statements are included/excluded in the uploaded code.
+  
+- `util.c` (& `util.h`)
+  - Here we have some *utility functionality* like:
+    - A **Delay** method with it's **interrupt handler** and a function to **enable or disable** `systicks`.
+    - A method to **initialize the LED's**.
+    - A method to **stop code execution when an error occured**.
+  
+- `handlers.c` (& `handlers.h`)
+  - Here we've gathered the *interrupt handlers* for **`RTC compare`** and **odd and even pin interrupts**.
+  
+- `accel.c`(& `accel.h`)
+  - Here we've gathered all the methods that have something to do with the accelerometer:
+    - `void initADXL_VCC (void)`: Initialize and enable the GPIO pin wich powers the accelerometer.
+    - `void powerADXL (bool enabled)`: Enable or disable the GPIO pin wich powers the accelerometer.
+    - `void initADXL_SPI (void)`: Initialize the SPI pins and settings to communicate with the accelerometer.
+    - `void testADXL (void)`: Test all the ODR (Output Data Rate) settings to see the effect they have on power.
+    - `void readValuesADXL (void)`: Read and display the X-Y-Z g-values on UART.
+    - `void resetHandlerADXL (void)`: This method tries to read the sensor ID. If this fails it tries to soft reset it and tries to read the ID again after a second. If this fails again the power to the sensor is turned off for one second. If the ID check fails again after this, the code stops executing and the `error` method is called.
+    - `uint8_t readADXL (uint8_t address)`: Read one byte of data from a given register address. This method is called by other methods like `readADXL_XYZDATA`.
+    - `void writeADXL (uint8_t address, uint8_t data)`: Write one byte of data to a given register address. This method is called by other methods like `configADXL_ODR`, `configADXL_range`, ... .
+    - `void readADXL_XYZDATA (void)`: Read the X-Y-Z data registers using *burst reads* and put the response data in the global array.
+    - `void configADXL_ODR (uint8_t givenODR)`: Configure the Output Data Rate (ODR).
+    - `void configADXL_range (uint8_t givenRange)`: Configure the measurement range and store the selected one in a global variable.
+    - `void configADXL_activity (uint8_t gThreshold)`: Configure the accelerometer to work in activity threshold mode with a given *g-value*. This way the accelerometer generates an interrupt to wakeup the microcontroller if a value higher than the given threshold is detected.
+    - `void measureADXL (bool enabled)`: Enable or disable measurement mode.
+    - `void softResetADXL (void)`: Write `'R'` to the *soft reset register* to soft-reset the accelerometer. This method is called by `resetHandlerADXL`.
+    - `bool checkID_ADXL (void)`: Check if the ID is correct. This method is called by `resetHandlerADXL`.
+    - `int32_t convertGRangeToGValue (int8_t sensorValue)`: Convert sensor readout-value in +-g range to mg value. This method is called by `readADXL_XYZDATA`.
+
+- `dbprint.c` (& `dbprint.h`)
+  - Here a lot of debugging methods are implemented. For more info see [dbprint GIT repo](https://github.com/Fescron/dbprint).
+
+<br/>
+
+### 2.2 - Code flow
 
 TODO (flowchart)
 
@@ -61,6 +126,7 @@ The same behaviour was observed when we tried to *read a register*. The first pi
 ### 4.1 - Wakeup-mode
 
 The accelerometer can be put in a `wakeup-mode` where he only consumes about **270 nA** (@2.0V) and measures the acceleration *about six times per second* to determine whether motion is present or absent. If motion is detected, the accelerometer can respond autonomously in the following ways:
+
 - Switch into full bandwidth measurement mode.
 - Signal an interrupt to a microcontroller.
 - Wake up downstream circuitry, depending on the configuration.
@@ -68,6 +134,8 @@ The accelerometer can be put in a `wakeup-mode` where he only consumes about **2
 In wake-up mode, all accelerometer features are available with the exception of the activity timer. All registers can be accessed, and real-time data can be read and/or stored in the FIFO.
 
 **This was not (yet) implemented since it would be very hard to measure these very small current differences. Therefor it would be hard to check if the accelerometer behaves like it should, and the time to get this working would perhaps better be used somewhere else...**
+
+<br/>
 
 ### 4.2 - FIFO and wave frequency
 
@@ -78,6 +146,7 @@ We can perhaps use the `FIFO` to store measurements at an optimal `ODR` (Output 
 ## 5 - Current measurements
 
 These are rough measurements (16-12-2018), the values were not read from the sensor, it was only put in measurement mode at the given ODR:
+
 - ODR 12,5 HZ ~ 29,60 - 30,41 µA
 - ODR 25 Hz ~ 28,43 µA (?)
 - ODR 50 Hz ~ 30,88 µA
