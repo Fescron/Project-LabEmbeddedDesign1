@@ -95,7 +95,7 @@ These are all of the files we've created to make the project more *readable*:
 
 ### 2.2 - Code flow
 
-![Flowchart](/doc/reports/figures/flowchart.png?raw=true "Flowchart")
+![Flowchart](/doc/reports/flowchart.png?raw=true "Flowchart")
 
 **Extra notes on the flowchart:**
 
