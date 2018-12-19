@@ -8,6 +8,8 @@ The main code is developed for use on the `Silicion Labs Happy Gecko EFM32 board
 
 The main project also uses code from **dbprint**, this needs to be added alongside the code on this repository to get the code working. See [dbprint GIT repo](https://github.com/Fescron/dbprint) for more info regarding this.
 
+![Project](/doc/reports/figures/project.jpg?raw=true "Project")
+
 ------
 
 ## 1 - GIT repo structure
