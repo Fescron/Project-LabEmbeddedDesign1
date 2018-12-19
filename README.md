@@ -40,14 +40,15 @@ In the **header** files we've put:
 
 - All other includes to other libraries/code we need
 - PIN and REGISTER definitions
-- Method prototypes
 - Public variables
+- Method prototypes
 
 In the **source** files we've put:
 
+- A single include to the corresponding header file
 - All of the documentation
+- The (public) variable instantiations
 - The function implementations
-- The variable instantiations
 
 <br/>
 
