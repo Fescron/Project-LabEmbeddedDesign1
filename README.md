@@ -4,6 +4,8 @@ All the designed code and written reports created for **Lab Embedded Design 1** 
 
 The main code is developed for use on the `Silicion Labs Happy Gecko EFM32 board (EFM32HG322 -- TQFP48)` and was developed on `Simplicity Studio v4` on `Ubuntu 18.04 LTS`. It uses the `ADXL362` accelerometer from *Analog Devices* on a [breakout board from Sparkfun](https://www.sparkfun.com/products/11446).
 
+<br/>
+
 The main project also uses code from **dbprint**, this needs to be added alongside the code on this repository to get the code working. See [dbprint GIT repo](https://github.com/Fescron/dbprint) for more info regarding this.
 
 ------
