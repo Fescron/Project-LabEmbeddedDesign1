@@ -38,6 +38,7 @@ The corresponding `header` (`.h`) and `source` (`.c`) files are placed in the re
 
 In the **header** files we've put:
 
+- All other includes to other libraries/code we need
 - PIN and REGISTER definitions
 - Method prototypes
 - Public variables
