@@ -41,15 +41,15 @@ The corresponding `header` (`.h`) and `source` (`.c`) files are placed in the re
 In the **header** files we've put:
 
 - All other includes to other libraries/code we need
-- PIN and REGISTER definitions
-- Public variables
+- PORT, PIN and REGISTER definitions
+- Public variable declararions
 - Method prototypes
 
 In the **source** files we've put:
 
 - A single include to the corresponding header file
-- All of the documentation
 - The (public) variable instantiations
+- All of the documentation
 - The function implementations
 
 <br/>
