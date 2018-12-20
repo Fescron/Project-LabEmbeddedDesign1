@@ -140,7 +140,13 @@ The same behaviour was observed when we tried to *read a register*. The first pi
 
 ## 4 - Future
 
-### 4.1 - Wakeup-mode
+### 4.1 - Process the data
+
+Right now data doesn't really get read in by the sensor, only the LED is turned on and the interrupt on the accelerometer is cleared if necessary. In the future this could change.
+
+<br/>
+
+### 4.2 - Wakeup-mode
 
 The accelerometer can be put in a `wakeup-mode` where he only consumes about **270 nA** (@2.0V) and measures the acceleration *about six times per second* to determine whether motion is present or absent. If motion is detected, the accelerometer can respond autonomously in the following ways:
 
@@ -154,7 +160,7 @@ In wake-up mode, all accelerometer features are available with the exception of 
 
 <br/>
 
-### 4.2 - FIFO and wave frequency
+### 4.3 - FIFO and wave frequency
 
 We can perhaps use the `FIFO` to store measurements at an optimal `ODR` (Output Data Rate) so the **wave frequency** can be calculated using *FFT* functionality available in `CMSIS` libraries. The accelerometer could fill this FIFO on it's own and signal to the microcontroller when it is filled by using an interrupt (there is still one pin unused). Then the microcontroller can read all these values at once and calculate the frequency, after which he again goes to sleep. *We also need to look into the amount of samples we need for this to work.*
 
