@@ -24,7 +24,7 @@ This is an optimized **blink** example which was created at the start of the lab
 
 ### 1.3 - code/SLSTK3400A_ADXL362
 
-This is the main code developed for the project for the lab sessions. This is where most of the rest of this *readme* is about.
+This is the main code developed for the project for the lab sessions. This is where the rest of this *readme* is about. This code is also talked about in more detail in [this report](doc/reports/EmbeddedDesign1-Labo-project-BrechtVanEeckhoudt-ChrisThoen.pdf) (Dutch).
 
 ------
 
@@ -122,41 +122,15 @@ The following two figures are output examples in the UART console. The first one
 
 ------
 
-## 3 - Development problems
+## 3 - Future
 
-Along the way there were some hiccups in the code-development. The main problem we first faced is discussed in short below.
-
-We first left `automatic ChipSelect` in the `USART config` enabled. After getting no response from the accelerometer we observed the `SPI` bus with a logic analyser. Below we see the incorrect behaviour, normally the accelerometer should perform a **soft reset**. 
-
-![Auto CS = true](/doc/reports/figures/ADXL-reset-autoCStrue.png?raw=true "Auto CS = true")
-
-**As seen above, the ChipSelect pin goes low for each byte. This is not the correct behaviour, since it needs to stay low for three bytes** (`register address`- `read/write` - `value to read/write`).
-
-<br/>
-
-After manually setting the CS pin high and low we got the correct behaviour, as depicted below.
-
-![Auto CS = false](/doc/reports/figures/ADXL-reset-autoCSfalse-CSPD4.png?raw=true "Auto CS = false")
-
-<br/>
-
-The same behaviour was observed when we tried to *read a register*. The first picture below is the incorrect behaviour, afterwards we see the accelerometer responding correctly.
-
-![Auto CS = true](/doc/reports/figures/ADXL-read-autoCStrue.png?raw=true "Auto CS = true")
-
-![Auto CS = false](/doc/reports/figures/ADXL-read-autoCSfalse-CSPD4.png?raw=true "Auto CS = false")
-
-------
-
-## 4 - Future
-
-### 4.1 - Process the data
+### 3.1 - Process the data
 
 Right now data doesn't really get read in by the sensor, only the LED is turned on and the interrupt on the accelerometer is cleared if necessary. In the future this could change.
 
 <br/>
 
-### 4.2 - Wakeup-mode
+### 3.2 - Wakeup-mode
 
 The accelerometer can be put in a `wakeup-mode` where he only consumes about **270 nA** (@2.0V) and measures the acceleration *about six times per second* to determine whether motion is present or absent. If motion is detected, the accelerometer can respond autonomously in the following ways:
 
@@ -170,25 +144,6 @@ In wake-up mode, all accelerometer features are available with the exception of 
 
 <br/>
 
-### 4.3 - FIFO and wave frequency
+### 3.3 - FIFO and wave frequency
 
 We can perhaps use the `FIFO` to store measurements at an optimal `ODR` (Output Data Rate) so the **wave frequency** can be calculated using *FFT* functionality available in `CMSIS` libraries. The accelerometer could fill this FIFO on it's own and signal to the microcontroller when it is filled by using an interrupt (there is still one pin unused). Then the microcontroller can read all these values at once and calculate the frequency, after which he again goes to sleep. *We also need to look into the amount of samples we need for this to work.*
-
-------
-
-## 5 - Current measurements
-
-These are rough measurements (16-12-2018), the values were not read from the sensor, it was only put in measurement mode at the given ODR:
-
-- ODR 12,5 HZ ~ 29,60 - 30,41 µA
-- ODR 25 Hz ~ 28,43 µA (?)
-- ODR 50 Hz ~ 30,88 µA
-- ODR 100 Hz ~ 32,09 µA
-- ODR 200 Hz ~ 33,77 µA
-- ODR 400 Hz ~ 35,43 - 36 µA
-
-**The microcontroller was manually reset each time using the button to get these "correct" values.**
-
-<br/>
-
-**More current measurements can be found at [doc/reports/current-measurements/](/doc/reports/current-measurements)**
