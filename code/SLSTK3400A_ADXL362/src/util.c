@@ -56,7 +56,7 @@ void Error (uint8_t number)
 {
 
 #ifdef DEBUGGING /* DEBUGGING */
-	dbcritInt(">>> Error (", number, ")! Please reset MCU. <<<", false);
+	dbcritInt(">>> Error (", number, ")! Please reset MCU. <<<");
 #endif /* DEBUGGING */
 
 	GPIO_PinOutClear(LED0_PORT, LED0_PIN); /* Disable LED0 */

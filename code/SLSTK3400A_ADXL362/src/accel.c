@@ -302,8 +302,8 @@ void resetHandlerADXL (void)
 	}
 
 #ifdef DEBUGGING /* DEBUGGING */
-	if (retries < 2) dbinfoInt("Soft reset ADXL done (", retries, " retries)", false);
-	else dbwarnInt("Soft reset ADXL done, had to \"hard reset\" (", retries, " retries)", false);
+	if (retries < 2) dbinfoInt("Soft reset ADXL done (", retries, " retries)");
+	else dbwarnInt("Soft reset ADXL done, had to \"hard reset\" (", retries, " retries)");
 #endif /* DEBUGGING */
 
 }
@@ -512,7 +512,7 @@ void configADXL_activity (uint8_t gThreshold)
 	writeADXL(ADXL_REG_THRESH_ACT_H, high); /* 2:0 bits used */
 
 #ifdef DEBUGGING /* DEBUGGING */
-	dbinfoInt("Activity configured: ", gThreshold, " g", false);
+	dbinfoInt("Activity configured: ", gThreshold, " g");
 #endif /* DEBUGGING */
 
 }
