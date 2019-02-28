@@ -12,6 +12,25 @@ The main project also uses code from **dbprint**, this needs to be added alongsi
 
 ------
 
+## Table of contents
+
+- [1 - GIT repo structure](#1---git-repo-structure)
+  - [1.1 - code/SLSTK3400A_blink-unoptimized/](#11---codeslstk3400a_blink-unoptimized)
+  - [1.2 - code/SLSTK3400A_blink-optimized/](#12---codeslstk3400a_blink-optimized)
+  - [1.3 - code/SLSTK3400A_ADXL362](#13---codeslstk3400a_adxl362)
+- [2 - Documentation](#2---documentation)
+  - [2.1 - File structure](#21---file-structure)
+    - [2.1.1 - Header and source files](#211---header-and-source-files)
+    - [2.1.2 - Used files](#212---used-files)
+  - [2.2 - Code flow](#22---code-flow)
+  - [2.3 - Demo](#23---demo)
+- [3 - Future](#3---future)
+  - [3.1 - Process the data](#31---process-the-data)
+  - [3.2 - Wakeup-mode](#32---wakeup-mode)
+  - [3.3 - FIFO and wave frequency](#33---fifo-and-wave-frequency)
+
+------
+
 ## 1 - GIT repo structure
 
 ### 1.1 - code/SLSTK3400A_blink-unoptimized/
