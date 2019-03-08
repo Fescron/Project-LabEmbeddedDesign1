@@ -82,7 +82,7 @@ These are all of the files we've created to make the project more *readable*:
 - `main.c`
   - Here is the **main method** where everything starts from. We've also added **two initialisation methods** that configure the `EMF32` to **wakeup from pin interrupts** and/or it's **`RTC compare` ability**.
   
-- `debuging.h`
+- `debugging.h`
   - Here we can **enable or disable debugging over UART** by (un)commenting one `#define` line. This file is called in every other file where there are UART (`dbprint`) calls. Because these calls are surrounded by `#ifdef DEBUGGING ... #endif` tags, the statements are included/excluded in the uploaded code.
   
 - `util.c` (& `util.h`)
