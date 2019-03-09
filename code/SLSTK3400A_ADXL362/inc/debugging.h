@@ -5,7 +5,7 @@
  *   This header file is called in every other file where there are UART
  *   debugging statements. Commenting the line in this file can remove all
  *   UART functionality in the whole project.
- * @version 3.0
+ * @version 3.1
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 

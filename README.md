@@ -14,20 +14,22 @@ The main project also uses code from **dbprint**, this needs to be added alongsi
 
 ## Table of contents
 
-- [1 - GIT repo structure](#1---git-repo-structure)
-  - [1.1 - code/SLSTK3400A_blink-unoptimized/](#11---codeslstk3400a_blink-unoptimized)
-  - [1.2 - code/SLSTK3400A_blink-optimized/](#12---codeslstk3400a_blink-optimized)
-  - [1.3 - code/SLSTK3400A_ADXL362](#13---codeslstk3400a_adxl362)
-- [2 - Documentation](#2---documentation)
-  - [2.1 - File structure](#21---file-structure)
-    - [2.1.1 - Header and source files](#211---header-and-source-files)
-    - [2.1.2 - Used files](#212---used-files)
-  - [2.2 - Code flow](#22---code-flow)
-  - [2.3 - Demo](#23---demo)
-- [3 - Future](#3---future)
-  - [3.1 - Process the data](#31---process-the-data)
-  - [3.2 - Wakeup-mode](#32---wakeup-mode)
-  - [3.3 - FIFO and wave frequency](#33---fifo-and-wave-frequency)
+- [Project-LabEmbeddedDesign1](#project-labembeddeddesign1)
+  - [Table of contents](#table-of-contents)
+  - [1 - GIT repo structure](#1---git-repo-structure)
+    - [1.1 - code/SLSTK3400A_blink-unoptimized/](#11---codeslstk3400ablink-unoptimized)
+    - [1.2 - code/SLSTK3400A_blink-optimized/](#12---codeslstk3400ablink-optimized)
+    - [1.3 - code/SLSTK3400A_ADXL362](#13---codeslstk3400aadxl362)
+  - [2 - Documentation](#2---documentation)
+    - [2.1 - File structure](#21---file-structure)
+      - [2.1.1 - Header and source files](#211---header-and-source-files)
+      - [2.1.2 - Used files](#212---used-files)
+    - [2.2 - Code flow](#22---code-flow)
+    - [2.3 - Demo](#23---demo)
+  - [3 - Future](#3---future)
+    - [3.1 - Process the data](#31---process-the-data)
+    - [3.2 - Wakeup-mode](#32---wakeup-mode)
+    - [3.3 - FIFO and wave frequency](#33---fifo-and-wave-frequency)
 
 ------
 
@@ -62,7 +64,7 @@ The corresponding `header` (`.h`) and `source` (`.c`) files are placed in the re
 In the **header** files we've put:
 
 - All other includes to other libraries/code we need
-- PORT, PIN and REGISTER definitions
+- REGISTER definitions (PORT and PIN definitions are located in `pin_mapping.h`)
 - Public variable declararions
 - Method prototypes
 
@@ -81,6 +83,9 @@ These are all of the files we've created to make the project more *readable*:
 
 - `main.c`
   - Here is the **main method** where everything starts from. We've also added **two initialisation methods** that configure the `EMF32` to **wakeup from pin interrupts** and/or it's **`RTC compare` ability**.
+
+- `pin_mapping.h`
+  - Here we put all the PORT and PIN definitions.
   
 - `debuging.h`
   - Here we can **enable or disable debugging over UART** by (un)commenting one `#define` line. This file is called in every other file where there are UART (`dbprint`) calls. Because these calls are surrounded by `#ifdef DEBUGGING ... #endif` tags, the statements are included/excluded in the uploaded code.

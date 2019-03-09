@@ -1,21 +1,28 @@
 /***************************************************************************//**
  * @file main.c
  * @brief The main file for the program to interface to the accelerometer.
- * @version 3.0
+ * @version 3.1
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
  *
- * @section Pinout ADXL362
+ * @section Pinout
  *
- *   PE10: MOSI
- *   PE11: MISO
- *   PE12: CLK
+ *   ADXL:
+ *     PE10: MOSI
+ *     PE11: MISO
+ *     PE12: CLK
+ *     PD04: NCS
+ *     PD05: VCC
+ *     PD07: INT1
  *
- *   PD4: NCS
- *   PD5: VCC
+ *   LED's:
+ *     PF04: LED0
+ *     PF05: LED1
  *
- *   PD7: INT1
+ *   BUTTONS:
+ *     PC09: PB0
+ *     PC10: PB1
  *
  ******************************************************************************/
 
@@ -30,9 +37,10 @@
 #include "em_emu.h"    /* Energy Management Unit */
 #include "em_rtc.h"    /* Real Time Counter (RTC) */
 
-#include "../inc/accel.h"    /* Functions related to the accelerometer */
-#include "../inc/util.h"     /* Utility functions */
-#include "../inc/handlers.h" /* Interrupt handlers */
+#include "../inc/accel.h"    	/* Functions related to the accelerometer */
+#include "../inc/util.h"    	/* Utility functions */
+#include "../inc/handlers.h" 	/* Interrupt handlers */
+#include "../inc/pin_mapping.h" /* PORT and PIN definitions */
 
 #include "../inc/debugging.h" /* Enable or disable printing to UART for debugging */
 
@@ -41,14 +49,6 @@
 #define DELAY_RTC 60.0 /* seconds */
 #define LFXOFREQ 32768
 #define COMPARE_RTC (DELAY_RTC * LFXOFREQ)
-
-
-/* Definitions for buttons */
-#define PB0_PORT gpioPortC
-#define PB0_PIN  9
-#define PB1_PORT gpioPortC
-#define PB1_PIN  10
-
 
 
 /**************************************************************************//**

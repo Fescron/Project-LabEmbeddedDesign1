@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file util.h
  * @brief Utility functions.
- * @version 3.0
+ * @version 3.1
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -16,14 +16,8 @@
 #include "em_device.h" /* Include necessary MCU-specific header file */
 #include "em_gpio.h"   /* General Purpose IO */
 
-#include "../inc/debugging.h" /* Enable or disable printing to UART */
-
-
-/* PORT and PIN definitoons */
-#define LED0_PORT gpioPortF
-#define LED0_PIN  4
-#define LED1_PORT gpioPortF
-#define LED1_PIN  5
+#include "../inc/pin_mapping.h" /* PORT and PIN definitions */
+#include "../inc/debugging.h" 	/* Enable or disable printing to UART */
 
 
 /* Prototypes */
