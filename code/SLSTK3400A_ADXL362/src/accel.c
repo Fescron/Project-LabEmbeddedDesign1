@@ -2,7 +2,7 @@
  * @file accel.c
  * @brief All code for the ADXL362 accelerometer.
  * @details Started with code from the UART example (main_series0_HG.c) from SiLabs Github.
- * @version 3.1
+ * @version 3.2
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -57,6 +57,33 @@ void powerADXL (bool enabled)
 		dbwarn("Accelerometer powered down");
 #endif /* DEBUGGING */
 
+	}
+}
+
+
+/**************************************************************************//**
+ * @brief
+ *   Enable or disable the SPI pins to the accelerometer.
+ *
+ * @param[in] enabled
+ *   @li True - Enable the SPI pins to the accelerometer.
+ *   @li False - Disable the SPI pins to the accelerometer.
+ *****************************************************************************/
+void enableSPIpinsADXL (bool enabled)
+{
+	if (enabled)
+	{
+		GPIO_PinModeSet(ADXL_CLK_PORT, ADXL_CLK_PIN, gpioModePushPull, 0);   /* US0_CLK is push pull */
+		GPIO_PinModeSet(ADXL_NCS_PORT, ADXL_NCS_PIN, gpioModePushPull, 1);   /* US0_CS is push pull */
+		GPIO_PinModeSet(ADXL_MOSI_PORT, ADXL_MOSI_PIN, gpioModePushPull, 1); /* US0_TX (MOSI) is push pull */
+		GPIO_PinModeSet(ADXL_MISO_PORT, ADXL_MISO_PIN, gpioModeInput, 1);    /* US0_RX (MISO) is input */
+	}
+	else
+	{
+		GPIO_PinModeSet(ADXL_CLK_PORT, ADXL_CLK_PIN, gpioModeDisabled, 0);
+		GPIO_PinModeSet(ADXL_NCS_PORT, ADXL_NCS_PIN, gpioModeDisabled, 1);
+		GPIO_PinModeSet(ADXL_MOSI_PORT, ADXL_MOSI_PIN, gpioModeDisabled, 1);
+		GPIO_PinModeSet(ADXL_MISO_PORT, ADXL_MISO_PIN, gpioModeDisabled, 1);
 	}
 }
 

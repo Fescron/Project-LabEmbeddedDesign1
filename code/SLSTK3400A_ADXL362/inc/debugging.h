@@ -5,7 +5,7 @@
  *   This header file is called in every other file where there are UART
  *   debugging statements. Commenting the line in this file can remove all
  *   UART functionality in the whole project.
- * @version 3.1
+ * @version 3.2
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -16,7 +16,7 @@
 
 
 /* Comment the line below to remove all USART1 debugging stuff (TX = PC0 ~ VCOM @ 115200) */
-#define DEBUGGING /* Comment to remove all USART1 stuff */
+//#define DEBUGGING /* Comment to remove all USART1 stuff */
 
 
 #ifdef DEBUGGING /* DEBUGGING */

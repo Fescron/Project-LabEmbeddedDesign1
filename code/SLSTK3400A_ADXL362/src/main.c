@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file main.c
  * @brief The main file for the program to interface to the accelerometer.
- * @version 3.1
+ * @version 3.2
  * @author Brecht Van Eeckhoudt
  *
  * ******************************************************************************
@@ -91,11 +91,13 @@ void initGPIOwakeup (void)
  *****************************************************************************/
 void initRTCcomp (void)
 {
-	/* Enable the oscillator for the RTC */
+	/* Enable the low-frequency crystal oscillator for the RTC */
 	CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
 
-	/* Turn on the clock for Low Energy clocks */
-	CMU_ClockEnable(cmuClock_HFLE, true);
+	/* Enable the clock to the interface of the low energy modules */
+	CMU_ClockEnable(cmuClock_HFLE, true); // cmuClock_CORELE = cmuClock_HFLE
+
+	/* Route the LFXO clock to the RTC */
 	CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFXO);
 
 	/* Turn on the RTC clock */
@@ -213,7 +215,11 @@ int main (void)
 #endif /* DEBUGGING */
 
 		systickInterrupts(false); /* Disable SysTick interrupts */
+		enableSPIpinsADXL(false); /* Disable SPI pins */
+
 		EMU_EnterEM2(true); /* "true": Save and restore oscillators, clocks and voltage scaling */
+
+		enableSPIpinsADXL(true); /* Enable SPI pins */
 		systickInterrupts(true); /* Enable SysTick interrupts */
 	}
 }

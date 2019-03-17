@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file accel.h
  * @brief All code for the ADXL362 accelerometer.
- * @version 3.1
+ * @version 3.2
  * @author Brecht Van Eeckhoudt
  ******************************************************************************/
 
@@ -49,6 +49,7 @@
 void initADXL_VCC (void);
 void powerADXL (bool enabled);
 
+void enableSPIpinsADXL (bool enabled);
 void initADXL_SPI (void);
 
 void testADXL (void);
