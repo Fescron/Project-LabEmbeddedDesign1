@@ -47,6 +47,8 @@ This is an optimized **blink** example which was created at the start of the lab
 
 This is the main code developed for the project for the lab sessions. This is where the rest of this *readme* is about. This code is also talked about in more detail in [this report](doc/reports/EmbeddedDesign1-Labo-project-BrechtVanEeckhoudt-ChrisThoen.pdf) (Dutch).
 
+> **UPDATE (17-03-2019):** Fixed too high sleep current (>30 µA) caused by the accelerometer sitting on the unused SPI bus. The solution was to disable the SPI pins before going to sleep. This was fixed in the code but the sleep-current-values in the report are wrong. The new sleep current is **less than 4 µA**.
+
 ------
 
 ## 2 - Documentation
@@ -103,6 +105,7 @@ These are all of the files we've created to make the project more *readable*:
   - Here we've gathered all the methods that have something to do with the accelerometer:
     - `void initADXL_VCC (void)`: Initialize and enable the GPIO pin wich powers the accelerometer.
     - `void powerADXL (bool enabled)`: Enable or disable the GPIO pin wich powers the accelerometer.
+    - `void enableSPIpinsADXL (bool enabled)`: Enable or disable the SPI pins to the accelerometer.
     - `void initADXL_SPI (void)`: Initialize the SPI pins and settings to communicate with the accelerometer.
     - `void testADXL (void)`: Test all the ODR (Output Data Rate) settings to see the effect they have on power.
     - `void readValuesADXL (void)`: Read and display the X-Y-Z g-values on UART.
