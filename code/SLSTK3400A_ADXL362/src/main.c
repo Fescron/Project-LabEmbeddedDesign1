@@ -153,15 +153,6 @@ int main (void)
 	/* Initialize LED's */
 	initLEDS();
 
-
-	/* TODO: this doesn't seem to change anything */
-	/* Configure PA8 as an output (EFM_DISP_ENABLE) */
-	//GPIO_PinModeSet(gpioPortA, 8, gpioModePushPull, 0);
-
-	/* Set EFM_DISP_ENABLE low to disable LCD */
-	//GPIO_PinOutClear(gpioPortA, 8);
-
-
 	/* Soft reset ADXL handler */
 	resetHandlerADXL();
 
@@ -217,7 +208,7 @@ int main (void)
 		systickInterrupts(false); /* Disable SysTick interrupts */
 		enableSPIpinsADXL(false); /* Disable SPI pins */
 
-		EMU_EnterEM2(true); /* "true": Save and restore oscillators, clocks and voltage scaling */
+		EMU_EnterEM2(false); /* "true" doesn't seem to have any effect (save and restore oscillators, clocks and voltage scaling) */
 
 		enableSPIpinsADXL(true); /* Enable SPI pins */
 		systickInterrupts(true); /* Enable SysTick interrupts */
