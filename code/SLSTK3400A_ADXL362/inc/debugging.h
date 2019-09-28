@@ -16,7 +16,7 @@
 
 
 /* Comment the line below to remove all USART1 debugging stuff (TX = PC0 ~ VCOM @ 115200) */
-//#define DEBUGGING /* Comment to remove all USART1 stuff */
+#define DEBUGGING /* Comment to remove all USART1 stuff */
 
 
 #ifdef DEBUGGING /* DEBUGGING */
